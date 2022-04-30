@@ -75,6 +75,51 @@ void initADCSOCs(void);
 volatile int reset = 0;
 Uint16 sState = 0;
 void phase_switch(int cycles, long delay, uint16_t rxStatus, uint16_t sensorData1, uint16_t sensorData2, uint16_t sensorData3, uint16_t sensorData4, uint16_t sensorData5, uint16_t sensorData6);
+
+//TRANFORM AND SECTOR DETECTING FUNCTIONS COMMENTED OUT FOR OPENLOOP CONTROL (FOR VALIDATION)
+/*
+// sector function routines;
+void sector1(void);
+void sector2(void);
+void sector3(void);
+void sector4(void);
+void sector5(void);
+void sector6(void);
+//CLARKE
+
+Uint16 V_clarkeA(Uint16 V1, Uint16 V2, Uint16 V3);
+Uint16 V_clarkeB(Uint16 V1, Uint16 V2, Uint16 V3);
+Uint16 i_clarkeA(Uint16 i1, Uint16 i2, Uint16 i3);
+Uint16 i_clarkeB(Uint16 i1, Uint16 i2, Uint16 i3);
+//park transform
+Uint16 parkP(Uint16 Valpha, Uint16 Vbeta);
+Uint16 parkVd(Uint16 Valpha, Uint16 Vbeta);
+//Sector State Change//////////////
+Uint16 fnV(Uint16 phiV);
+Uint16 fnI(Uint16 phiI);
+Uint16 deltaV(Uint16 phiV, Uint16 nV);
+Uint16 deltaI(Uint16 phiI, Uint16 nV);
+///Duty functions
+Uint16 D1(Uint16 Vd, Uint16 deltaV, Uint16 deltaI);
+Uint16 D2(Uint16 Vd, Uint16 deltaV, Uint16 deltaI);
+Uint16 D3(Uint16 Vd, Uint16 deltaV, Uint16 deltaI);
+Uint16 D4(Uint16 Vd, Uint16 deltaV, Uint16 deltaI);
+Uint16 D0(Uint16 D1, Uint16 D2, Uint16 D3,Uint16 D4);
+//Converting Duty Functions EVEN
+Uint16 P1_even(Uint16 D1, Uint16 CMPA);
+Uint16 P2_even(Uint16 D1, Uint16 D3, Uint16 CMPA);
+Uint16 P3_even(Uint16 D1, Uint16 D3,Uint16 D4, Uint16 CMPA);
+Uint16 P4_even(Uint16 D1, Uint16 D3,Uint16 D4, Uint16 D2, Uint16 CMPA);
+Uint16 P0_even(Uint16 P1, Uint16 P2, Uint16 P3, Uint16 P4);
+//Converting Duty Functions ODD
+Uint16 P1_odd(Uint16 D1, Uint16 CMPA);
+Uint16 P2_odd(Uint16 D1, Uint16 D3, Uint16 CMPA);
+Uint16 P3_odd(Uint16 D1, Uint16 D3,Uint16 D4, Uint16 CMPA);
+Uint16 P4_odd(Uint16 D1, Uint16 D3,Uint16 D4, Uint16 D2, Uint16 CMPA);
+Uint16 P0_odd(Uint16 P1, Uint16 P2, Uint16 P3, Uint16 P4);
+
+Uint16 switchState(Uint16 nV, Uint16 nI);
+*/
 void Sreset();
 void S1(Uint16 i);
 void S2(Uint16 i);
@@ -311,13 +356,29 @@ void main(void)
 
 void phase_switch(int cycles, long delay, uint16_t rxStatus, uint16_t sensorData1, uint16_t sensorData2, uint16_t sensorData3, uint16_t sensorData4, uint16_t sensorData5, uint16_t sensorData6)
 {
+       //switchState(nV, nI);
+    //Uint16 Valpha = V_clarkeA(VoltageV1, VoltageV2, VoltageV3);
+    //Uint16 Vbeta = V_clarkeB(VoltageV1, VoltageV2,  VoltageV3);
+
+    //Uint16 ialpha = i_clarkeA(SensorV1, SensorV2, SensorV3);
+    //Uint16 ibeta = i_clarkeB(SensorV1, SensorV2, SensorV3);
+    //park transform
+    //Uint16 phiV = parkP(Valpha, Vbeta);
+    //Uint16 Vd = parkVd(Valpha,Vbeta);
+    //Uint16 phiI = parkP(ialpha, ibeta);
+    //Uint16 Id = parkVd(ialpha,ibeta);
+    //Sector State Change//////////////
+    //Uint16 nV = fnV(phiV);
+    //Uint16 nI = fnI(phiI);
+    //**THE MATH ABOVE^ IS UtiLIZED IN FULL CLOSED LOOP MODE
+    
     unsigned char *msg; //char pointer makes an array of chars
     //int i = 0;
     for(sState =1; sState<19; sState++){
          //sState = j;
         DEVICE_DELAY_US(delay/10);
          for(sub=0; sub<4;sub++){
-
+//THE SWITCHING STATES ARE CALLED USING A LOOP ITERATING THROUGH EACH STATE (RATHER THAN USING nV & nI)
           if(sState == 1){S1(sub);}
           if(sState == 2){S2(sub);}
           if(sState == 3){S3(sub);}
@@ -341,6 +402,7 @@ void phase_switch(int cycles, long delay, uint16_t rxStatus, uint16_t sensorData
            DEVICE_DELAY_US(delay);
            Sreset();
            DEVICE_DELAY_US(delay/10);
+ //THE SENSOR ADC DIGITAL SIGNALS ARE CONVERTED TO BE DISPLAYED ON THE TERMINAL
            //sensor1
            if((rxStatus & SCI_RXSTATUS_ERROR) != 0){ESTOP0;}
            msg = "\r\nsensorData1: \0 ";
@@ -482,7 +544,7 @@ void phase_switch(int cycles, long delay, uint16_t rxStatus, uint16_t sensorData
          // Store results
          //
          //sensorData1 = ADC_readResult(ADCARESULT_BASE, ADCRESULT0);
-         sensorData1 = ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0);//AA0
+         sensorData1 = ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER0);//AA0 **<<THE FOLLOWING LABLES REPRESEND PIN # ON THE DSP
          sensorData2 = ADC_readResult(ADCARESULT_BASE, ADC_SOC_NUMBER1);//AA1
          sensorData3 = ADC_readResult(ADCBRESULT_BASE, ADC_SOC_NUMBER2);//AB2
          sensorData5 = ADC_readResult(ADCBRESULT_BASE, ADC_SOC_NUMBER3);//AB4
@@ -502,10 +564,7 @@ void phase_switch(int cycles, long delay, uint16_t rxStatus, uint16_t sensorData
         if (VoltageV3 >= VoltageV3max){ VoltageV3max = VoltageV3;}
 
          //
-         // Software breakpoint. At this point, conversion results are stored in
-         // adcAResult0, adcAResult1, adcDResult0, and adcDResult1.
-         //
-         // Hit run again to get updated conversions.
+
          //
      }
 
@@ -539,20 +598,8 @@ EPwm1Regs.AQCTLB.bit.CBU = AQ_CLEAR;
 
 
 
-/*
-    //#################### Interrupt Service Routines #################
-    interrupt void adcint1_isr(void)
-    {
-        SensorV1 = (AdcaResultRegs.ADCRESULT0); //Store ADCA0 result in SensorV1
-        SensorV2 = (AdcaResultRegs.ADCRESULT1); //Store ADCA1 result in SensorV2
-        SensorV3 = (AdcaResultRegs.ADCRESULT2); //Store ADCA2 result in SensorV3
-        VoltageV1 = AdcaResultRegs.ADCRESULT3; //Store ADCA3 result in VoltageV1
-        VoltageV2 = AdcaResultRegs.ADCRESULT4; //Store ADCA4 result in VoltageV2
-        VoltageV3 = AdcaResultRegs.ADCRESULT5; //Store ADCA5 result in VoltageV3
-        PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
-    }
-*/
-// Function to configure and power up ADCs A and C.
+
+// Function to configure and power up ADCs (NOT UTILIZED, INCOMPLETE).USE FOR POTENTIAL CODE OPTIMIZATION
 //
 /*
 void readADC(uint16_t sensorData1, uint16_t sensorData2, uint16_t sensorData3, uint16_t sensorData4, uint16_t sensorData5, uint16_t sensorData6){
@@ -785,6 +832,193 @@ void initADCSOCs(void)
           ADC_enableInterrupt(ADCD_BASE, ADC_INT_NUMBER1);
           ADC_clearInterruptStatus(ADCD_BASE, ADC_INT_NUMBER1);
 }
+// THE MATH FUNCTIONS BELOW ARE COMMENTED OUT TO RUN THE OPEN LOOP CONFIGURATION (VALIDATION PURPOSES)
+ /*
+ //CLARKE /////////////////////////
+//clarke transform
+
+Uint16 V_clarkeA(Uint16 V1, Uint16 V2, Uint16 V3)
+    {
+        Uint16 Valpha = sqrt(2/3)*(V1*1 + V2*(-1/2) + V3*(-1/2));
+        return Valpha;
+    }
+Uint16 V_clarkeB(Uint16 V1, Uint16 V2, Uint16 V3)
+    {
+        Uint16 Vbeta = sqrt(2/3)*(V1*0 + V2*(sqrt(3/2)) + V3*(sqrt(-3/2)));
+        return Vbeta;
+    }
+Uint16 i_clarkeA(Uint16 i1, Uint16 i2, Uint16 i3)
+    {
+        Uint16 ialpha = sqrt(2/3)*(i1*1 + i2*(-1/2) + i3*(-1/2));
+        return ialpha;
+    }
+Uint16 i_clarkeB(Uint16 i1, Uint16 i2, Uint16 i3)
+    {
+        Uint16 ibeta = sqrt(2/3)*(i1*0 + i2*(sqrt(3/2)) + i3*(sqrt(-3/2)));
+        return ibeta;
+    }
+
+//PARK/////////////////////////
+//park transform
+
+Uint16 parkP(Uint16 Valpha, Uint16 Vbeta){
+    Uint16 phi = atan2(Valpha,Vbeta);
+    return phi;
+}
+
+Uint16 parkVd(Uint16 Valpha, Uint16 Vbeta){
+    Uint16 Vd = (sqrt(3)/2)*sqrt(Valpha*Valpha + Vbeta*Vbeta);
+    return Vd;
+}
+
+//Sector State Change//////////////
+Uint16 fnV(Uint16 phiV){
+    Uint16 nV = 0;
+    float pi = 3.14159;
+    if(phiV >= (-pi/6) && phiV < (pi/6)){nV = 1;}//Sector 1
+    if(phiV >= (pi/6) && phiV < (pi/2)){nV = 2;}
+    if(phiV >= (pi/2) && phiV < (5*pi/6)){nV = 3;}
+    if(phiV >= (5*pi/6) && phiV < (pi)){nV = 4;}
+    if(phiV >= (-pi) && phiV < (-5*pi/6)){nV = 4;}
+    if(phiV >= (-5*pi) && phiV < (-pi/2)){nV = 5;}
+    if(phiV >= (-pi/2) && phiV < (-pi/6)){nV = 6;}
+
+    return nV;
+}
+
+Uint16 fnI(Uint16 phiI){
+    Uint16 nI = 0;
+    float pi = 3.14159;
+    if(phiI >= (-pi/6) && phiI < (pi/6)){nI = 1;}
+    if(phiI >= (pi/6) && phiI < (pi/2)){nI = 2;}
+    if(phiI >= (pi/2) && phiI < (5*pi/6)){nI = 3;}
+    if(phiI >= (5*pi/6) && phiI < (pi)){nI = 4;}
+    if(phiI >= (-pi) && phiI < (-5*pi/6)){nI = 4;}
+    if(phiI >= (-5*pi) && phiI < (-pi/2)){nI = 5;}
+    if(phiI >= (-pi/2) && phiI < (-pi/6)){nI = 6;}
+
+    return nI;
+}
+//converts the phi value found from alpha beta into the delta value for parkeri
+Uint16 deltaV(Uint16 phiV, Uint16 nV){
+    Uint16 deltaV = 0;
+    float pi = 3.14159;
+    if(nV ==1){deltaV = phiV + (pi/6);}
+    if(nV ==2){deltaV = phiV - (pi/6);}
+    if(nV ==3){deltaV = phiV - (pi/2);}
+    if((nV ==4) && (phiV > 0)){deltaV = phiV - (5*pi/6);}
+    if((nV ==4) && (phiV < 0)){deltaV = phiV + (7*pi/6);}
+    if(nV ==5){deltaV = phiV + (5*pi/6);}
+    if(nV ==6){deltaV = phiV + (pi/2);}
+
+    return deltaV;
+}
+
+Uint16 deltaI(Uint16 phiI, Uint16 nI){
+    Uint16 deltaI = 0;
+    float pi = 3.14159;
+    if(nI ==1){deltaI = phiI + (pi/6);}
+    if(nI ==2){deltaI = phiI - (pi/6);}
+    if(nI ==3){deltaI = phiI - (pi/2);}
+    if((nI ==4) && (phiI > 0)){deltaI = phiI - (5*pi/6);}
+    if((nI ==4) && (phiI < 0)){deltaI = phiI + (7*pi/6);}
+    if(nI ==5){deltaI = phiI + (5*pi/6);}
+    if(nI ==6){deltaI = phiI + (pi/2);}
+
+    return deltaI;
+}
+
+///Duty functions
+Uint16 D1(Uint16 Vd, Uint16 deltaV, Uint16 deltaI){
+    float pi = 3.14159;
+    Uint16 D1 = Vd * sin(deltaV) * sin((pi/3)-deltaI);
+    return D1;
+}
+Uint16 D2(Uint16 Vd, Uint16 deltaV, Uint16 deltaI){
+    Uint16 D2 = Vd * sin(deltaV) * sin(deltaI);
+    return D2;
+}
+Uint16 D3(Uint16 Vd, Uint16 deltaV, Uint16 deltaI){
+    float pi = 3.14159;
+    Uint16 D3 = Vd * sin((pi/3)-deltaV) * sin((pi/3)-deltaI);
+    return D3;
+}
+Uint16 D4(Uint16 Vd, Uint16 deltaV, Uint16 deltaI){
+    float pi = 3.14159;
+    Uint16 D4 = Vd * sin((pi/3)-deltaV) * sin(deltaI);
+    return D4;
+}
+//Configuration zero (helps with swithcing losses), this is the unforced phase null configuration.
+Uint16 D0(Uint16 D1, Uint16 D2, Uint16 D3,Uint16 D4 ){
+    Uint16 D0 = 0;
+    D0 = 1-D1-D2-D3-D4;
+    return D0;
+}
+
+//Converting Duty Functions EVEN
+Uint16 P1_even(Uint16 D1, Uint16 CMPA){
+    return D1 >= CMPA;
+}
+Uint16 P2_even(Uint16 D1, Uint16 D3, Uint16 CMPA){
+    return ((D3+D1) >= CMPA) - (D1 >= CMPA);
+}
+Uint16 P3_even(Uint16 D1, Uint16 D3,Uint16 D4, Uint16 CMPA){
+    return (D4+(D3+D1) >= CMPA) - ((D3+D1) >= CMPA);
+}
+Uint16 P4_even(Uint16 D1, Uint16 D3,Uint16 D4, Uint16 D2, Uint16 CMPA){
+    return (D2+D4+(D3+D1) >= CMPA) - ((D4+(D3+D1)) >= CMPA);
+}
+Uint16 P0_even(Uint16 P1, Uint16 P2, Uint16 P3, Uint16 P4){
+    return 1-P4-P3-P2-P1;
+}
+
+//Converting Duty Functions ODD
+Uint16 P1_odd(Uint16 D1, Uint16 CMPA){
+    return D1 >= CMPA;
+}
+Uint16 P2_odd(Uint16 D1, Uint16 D3, Uint16 CMPA){
+    return ((D3+D1) >= CMPA) - (D1 >= CMPA);
+}
+Uint16 P3_odd(Uint16 D1, Uint16 D3,Uint16 D4, Uint16 CMPA){
+    return (D4+(D3+D1) >= CMPA) - ((D3+D1) >= CMPA);
+}
+Uint16 P4_odd(Uint16 D1, Uint16 D3,Uint16 D4, Uint16 D2, Uint16 CMPA){
+    return (D2+D4+(D3+D1) >= CMPA) - ((D4+(D3+D1)) >= CMPA);
+}
+Uint16 P0_odd(Uint16 P1, Uint16 P2, Uint16 P3, Uint16 P4){
+    return 1-P4-P3-P2-P1;
+}
+*/
+
+//FINAL STATES (GOES INTO CASE VALUE)
+Uint16 switchState(Uint16 nV, Uint16 nI){
+    Uint16 state = 0;
+    if(((nV == 1) && (nI == 1))||((nV == 4) && (nI == 4))){state = 1;}//-3
+    if(((nV == 1) && (nI == 2))||((nV == 4) && (nI == 5))){state = 2;}//+2
+    if(((nV == 1) && (nI == 3))||((nV == 4) && (nI == 6))){state = 3;}//-1
+    if(((nV == 1) && (nI == 4))||((nV == 4) && (nI == 1))){state = 4;}//+3
+    if(((nV == 1) && (nI == 5))||((nV == 4) && (nI == 2))){state = 5;}//-2
+    if(((nV == 1) && (nI == 6))||((nV == 4) && (nI == 3))){state = 6;}//+1
+    //
+    if(((nV == 2) && (nI == 1))||((nV == 5) && (nI == 4))){state = 7;}//+9
+    if(((nV == 2) && (nI == 2))||((nV == 5) && (nI == 5))){state = 8;}//-8
+    if(((nV == 2) && (nI == 3))||((nV == 5) && (nI == 6))){state = 9;}//+7
+    if(((nV == 2) && (nI == 4))||((nV == 5) && (nI == 1))){state = 10;}//-9
+    if(((nV == 2) && (nI == 5))||((nV == 5) && (nI == 2))){state = 11;}//+8
+    if(((nV == 2) && (nI == 6))||((nV == 5) && (nI == 3))){state = 12;}//-7
+    //
+    if(((nV == 3) && (nI == 1))||((nV == 6) && (nI == 4))){state = 13;}//-6
+    if(((nV == 3) && (nI == 2))||((nV == 6) && (nI == 5))){state = 14;}//+5
+    if(((nV == 3) && (nI == 3))||((nV == 6) && (nI == 6))){state = 15;}//-4
+    if(((nV == 3) && (nI == 4))||((nV == 6) && (nI == 1))){state = 16;}//+6
+    if(((nV == 3) && (nI == 5))||((nV == 6) && (nI == 2))){state = 17;}//-5
+    if(((nV == 3) && (nI == 6))||((nV == 6) && (nI == 3))){state = 18;}//+4
+
+    return state;
+}
+*/   
+    
+//USED TO CLEAR ALL SWITCHES TO PREVENT A SHORT
 void Sreset(){
     GPIO_writePin(2U, 0); //SAa
     GPIO_writePin(3U, 0); //SAb
@@ -796,6 +1030,7 @@ void Sreset(){
     GPIO_writePin(9U, 0); //SCb
     GPIO_writePin(10U, 0); //SCc
 }
+//BELOW ARE ALL THE SWITCHING CONFIGURATOINS USED
 void S1(Uint16 i){
     switch(i)
 //-3
